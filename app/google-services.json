@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "427319426763",
+    "firebase_url": "https://gameudemy-176c0.firebaseio.com",
+    "project_id": "gameudemy-176c0",
+    "storage_bucket": "gameudemy-176c0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427319426763:android:10c653c5af77573f",
+        "android_client_info": {
+          "package_name": "com.titiarimba.tictactoygame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "427319426763-j8b4ai4tg7fhpri7g79qu9kepst87aig.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.titiarimba.tictactoygame",
+            "certificate_hash": "7ed1f11b197c0cbd927ce479d7d7b5988730a7c7"
+          }
+        },
+        {
+          "client_id": "427319426763-rmtg00traipp861ua0q51nnu4eijlnqg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_b5fZ1l2Nyh6NeoL7CMhp3K2-KhmXO_8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "427319426763-rmtg00traipp861ua0q51nnu4eijlnqg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

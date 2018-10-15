@@ -5,7 +5,6 @@
 
 package com.titiarimba.tictactoygame
 
-import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -13,17 +12,34 @@ import android.widget.Button
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
-
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity() {
 
+    //database instance
+    private var database= FirebaseDatabase.getInstance()
+    private var myRef = database.reference
+
+    var myEmail:String?=null
+
+    private var mFirebaseAnalytics:FirebaseAnalytics?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+        var b:Bundle=intent.extras
+        myEmail=b.getString("email")
+        incomingCalls()
     }
 
-    protected fun buClick(view:View){
-        val buSelected = view as Button
+    protected fun buClick(view: android.view.View){
+        val buSelected = view as android.widget.Button
         var cellID = 0
         when(buSelected.id){
             R.id.button -> cellID = 1
@@ -39,12 +55,13 @@ class MainActivity : AppCompatActivity() {
 
 //        Toast.makeText(this, "ID:"+ cellID, Toast.LENGTH_LONG).show()
 
-        playGame(cellID, buSelected)
-        CheckWiner()
+        myRef.child("PlayerOnline").child(sessionID!!).child(cellID.toString()).setValue(myEmail)
+//        playGame(cellID, buSelected)
+//        CheckWiner()
     }
 
-    var player1 = ArrayList<Int>()
-    var player2 = ArrayList<Int>()
+    var player1 = java.util.ArrayList<Int>()
+    var player2 = java.util.ArrayList<Int>()
     var activePlayer = 1
 
     fun playGame(cellID:Int, buSelected: Button){
@@ -53,7 +70,6 @@ class MainActivity : AppCompatActivity() {
             buSelected.setBackgroundResource(R.color.blue)
             player1.add(cellID)
             activePlayer = 2
-            AutoPlay()
         } else {
             buSelected.text = "O"
             buSelected.setBackgroundResource(R.color.pink)
@@ -62,6 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         buSelected.isEnabled=false
+        CheckWiner()
     }
 
     fun CheckWiner(){
@@ -127,8 +144,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun AutoPlay(){
+    fun AutoPlay(cellID: Int){
 
+        /*
         var emptyCells = ArrayList<Int>()
         for ( cellID in 1..9){
 
@@ -140,6 +158,8 @@ class MainActivity : AppCompatActivity() {
         var r = Random()
         val randIndex = r.nextInt(emptyCells.size-0)+0
         val cellID = emptyCells.get(randIndex)
+        */
+
 
         var buSelect:Button?
         when(cellID){
@@ -159,5 +179,89 @@ class MainActivity : AppCompatActivity() {
 
         playGame(cellID, buSelect)
 
+    }
+
+    protected fun btnRequestEvent(view: View){
+        var userEmail = edtEmail.text.toString()
+        myRef.child("Users").child(SplitString(userEmail)).child("Request")
+                .push().setValue(myEmail)
+        PlayerOnline(SplitString(myEmail!!)+SplitString(userEmail))
+        PlayerSymbol="X"
+    }
+
+    protected fun btnAcceptEvent(view: View){
+        var userEmail = edtEmail.text.toString()
+        myRef.child("Users").child(SplitString(userEmail)).child("Request")
+                .push().setValue(myEmail)
+        PlayerOnline(SplitString(myEmail!!)+SplitString(userEmail))
+        PlayerSymbol="O"
+    }
+
+    var sessionID:String?=null
+    var PlayerSymbol:String?=null
+
+    fun PlayerOnline(sessionID:String){
+        this.sessionID=sessionID
+        myRef.child("PlayerOnline").removeValue()
+        myRef.child("PlayerOnline").child(sessionID)
+                .addValueEventListener(object:ValueEventListener{
+                    override fun onDataChange(p0: DataSnapshot) {
+                        try {
+                            player1.clear()
+                            player2.clear()
+                            val td = p0.value as HashMap<String,Any>
+                            if (td!=null){
+                                var value:String
+                                for (key in td.keys){
+                                    value=td[key] as String
+
+                                    if (value!= myEmail){
+                                        activePlayer = if (PlayerSymbol==="X")1 else 2
+                                    }else{
+                                        activePlayer = if (PlayerSymbol==="X")2 else 1
+                                    }
+                                    AutoPlay(key.toInt())
+                                }
+                            }
+                        }catch (ex:Exception){}
+                    }
+
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+                })
+    }
+
+    fun incomingCalls(){
+        myRef.child("Users").child(SplitString(myEmail!!)).child("Request")
+                .addValueEventListener(object:ValueEventListener{
+
+                    override fun onDataChange(p0: DataSnapshot) {
+
+                        try {
+
+                            val td = p0.value as HashMap<String, Any>
+                            if (td!=null){
+
+                                var value:String
+                                for (key in td.keys){
+                                    value=td[key] as String
+                                    edtEmail.setText(value)
+                                    myRef.child("Users").child(SplitString(myEmail!!)).child("Request").setValue(true)
+                                    break
+                                }
+                            }
+                        }catch (ex:Exception){}
+                    }
+
+                    override fun onCancelled(p0: DatabaseError) {
+
+                    }
+                })
+    }
+
+    fun SplitString(str:String):String{
+        var split = str.split("@")
+        return split[0]
     }
 }
